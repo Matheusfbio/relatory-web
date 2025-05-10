@@ -1,82 +1,36 @@
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import { createTheme } from "@mui/material/styles";
-import DescriptionIcon from "@mui/icons-material/Description";
-import { AppProvider } from "@toolpad/core/AppProvider";
-import { DashboardLayout } from "@toolpad/core/DashboardLayout";
-import { useDemoRouter } from "@toolpad/core/internal";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { ReactRouterAppProvider } from "@toolpad/core/react-router";
+import { Outlet } from "react-router";
+import { DashboardLayout, type Navigation } from "@toolpad/core";
 
-const demoTheme = createTheme({
-  cssVariables: {
-    colorSchemeSelector: "data-toolpad-color-scheme",
+const NAVIGATION: Navigation = [
+  {
+    kind: "header",
+    title: "Main items",
   },
-  colorSchemes: { light: true, dark: true },
-  breakpoints: {
-    values: {
-      xs: 0,
-      sm: 600,
-      md: 600,
-      lg: 1200,
-      xl: 1536,
-    },
+  {
+    segment: "Items",
+    title: "Items",
+    icon: <DashboardIcon />,
   },
-});
+  {
+    segment: "Products",
+    title: "Products",
+    icon: <ShoppingCartIcon />,
+  },
+];
 
-function DemoPageContent({ pathname }: { pathname: string }) {
+const BRANDING = {
+  title: "Relatory",
+};
+
+export default function App() {
   return (
-    <Box
-      sx={{
-        py: 4,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        textAlign: "center",
-      }}
-    >
-      <Typography>Dashboard content for {pathname}</Typography>
-    </Box>
-  );
-}
-
-interface DemoProps {
-  /**
-   * Injected by the documentation to work in an iframe.
-   * Remove this when copying and pasting into your project.
-   */
-  window?: () => Window;
-}
-
-export default function DashboardLayoutNavigationLinks(props: DemoProps) {
-  const { window } = props;
-
-  const router = useDemoRouter("/home");
-
-  // Remove this const when copying and pasting into your project.
-  const demoWindow = window !== undefined ? window() : undefined;
-
-  return (
-    // preview-start
-    <AppProvider
-      navigation={[
-        {
-          segment: "home",
-          title: "Home",
-          icon: <DescriptionIcon />,
-        },
-        {
-          segment: "about",
-          title: "About Us",
-          icon: <DescriptionIcon />,
-        },
-      ]}
-      router={router}
-      theme={demoTheme}
-      window={demoWindow}
-    >
+    <ReactRouterAppProvider navigation={NAVIGATION} branding={BRANDING}>
       <DashboardLayout>
-        <DemoPageContent pathname={router.pathname} />
+        <Outlet />
       </DashboardLayout>
-    </AppProvider>
-    // preview-end
+    </ReactRouterAppProvider>
   );
 }
