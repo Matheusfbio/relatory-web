@@ -1,6 +1,7 @@
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
-import SelectAllTransferList from "../components/SelectAllTransferList";
+// import SelectAllTransferList from "../components/SelectAllTransferList";
+import BasicDateRangePicker from "../components/BasicDateRangePicker";
 
 export default function Items() {
   return (
@@ -33,7 +34,8 @@ export default function Items() {
           /> */}
         </div>
       </Box>
-      <SelectAllTransferList />
+      {/* <SelectAllTransferList /> */}
+      <BasicDateRangePicker />
     </>
   );
 }
