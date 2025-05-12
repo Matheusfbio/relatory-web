@@ -7,7 +7,7 @@ export default function BasicDateTimePicker() {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <DemoContainer components={["DateTimePicker"]}>
-        <DateTimePicker label="Basic date time picker" />
+        <DateTimePicker label="Data de vencimento" format="DD-MM-YYYY" />
       </DemoContainer>
     </LocalizationProvider>
   );

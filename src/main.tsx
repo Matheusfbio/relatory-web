@@ -10,7 +10,7 @@ import Items from "./pages/Items";
 
 const router = createBrowserRouter([
   {
-    // path: "/",
+    path: "/",
     Component: App,
     children: [
       {

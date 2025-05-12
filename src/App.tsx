@@ -5,10 +5,10 @@ import { Outlet } from "react-router";
 import { DashboardLayout, type Navigation } from "@toolpad/core";
 
 const NAVIGATION: Navigation = [
-  {
-    kind: "header",
-    title: "Main items",
-  },
+  // {
+  //   kind: "header",
+  //   title: "Main items",
+  // },
   {
     segment: "Items",
     title: "Items",
