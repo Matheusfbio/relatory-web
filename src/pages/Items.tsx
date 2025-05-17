@@ -12,6 +12,9 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ptBR } from "date-fns/locale/pt-BR";
+import { database } from "../../firebaseConfig";
+
+import { ref, push } from "firebase/database";
 
 // Estado inicial
 const initialState = {
@@ -20,7 +23,7 @@ const initialState = {
   unidades: "",
   tipoUnidade: "UN",
   responsavel: "",
-  dataAtual: new Date().toISOString().split("T")[0],
+  dataAtual: new Date(Date.now() - new Date().getTimezoneOffset() * 60000),
   dataVencimento: "",
   errors: {
     produto: "",
@@ -34,7 +37,7 @@ const initialState = {
 
 // Ações
 type Action =
-  | { type: "SET_FIELD"; field: string; payload: string }
+  | { type: "SET_FIELD"; field: string; payload: string | number | Date }
   | { type: "SET_ERRORS"; payload: Partial<typeof initialState.errors> }
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "RESET" };
@@ -51,14 +54,16 @@ function reducer(state: typeof initialState, action: Action) {
     case "RESET":
       return {
         ...initialState,
-        dataAtual: new Date().toISOString().split("T")[0],
+        dataAtual: new Date(
+          Date.now() - new Date().getTimezoneOffset() * 60000
+        ),
       };
     default:
       return state;
   }
 }
 
-const Formulario: React.FC = () => {
+const ItemForm: React.FC = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -80,12 +85,25 @@ const Formulario: React.FC = () => {
 
     dispatch({ type: "SET_LOADING", payload: true });
 
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // simula envio
+    try {
+      const produtosRef = ref(database, "produtos");
 
-    console.log("Dados enviados com sucesso:", state);
+      await push(produtosRef, {
+        produto: state.produto,
+        lote: state.lote,
+        unidades: state.unidades,
+        tipoUnidade: state.tipoUnidade,
+        responsavel: state.responsavel,
+        dataAtual: state.dataAtual.toISOString().split("T")[0],
+        dataVencimento: state.dataVencimento,
+      });
+
+      dispatch({ type: "RESET" });
+    } catch (error) {
+      console.error("Erro ao salvar no Firebase Realtime Database:", error);
+    }
 
     dispatch({ type: "SET_LOADING", payload: false });
-    dispatch({ type: "RESET" });
   };
 
   return (
@@ -186,18 +204,33 @@ const Formulario: React.FC = () => {
           required
         />
 
-        <TextField
+        <DatePicker
           label="Data atual"
-          type="date"
-          variant="outlined"
+          enableAccessibleFieldDOMStructure={false}
           value={state.dataAtual}
-          InputProps={{ readOnly: true }}
+          onChange={(newValue) =>
+            dispatch({
+              type: "SET_FIELD",
+              field: "dataAtual",
+              payload: newValue
+                ? newValue instanceof Date
+                  ? newValue
+                  : typeof newValue === "object" && "toDate" in newValue
+                    ? (
+                        newValue as unknown as Date & { toDate: () => Date }
+                      ).toDate()
+                    : new Date(newValue)
+                : new Date(),
+            })
+          }
+          slots={{
+            textField: (params) => <TextField {...params} fullWidth required />,
+          }}
         />
 
-        {/* DatePicker no lugar do TextField para data de vencimento */}
         <DatePicker
-          label="Data de vencimento"
           enableAccessibleFieldDOMStructure={false}
+          label="Data de vencimento"
           value={state.dataVencimento ? new Date(state.dataVencimento) : null}
           onChange={(newValue) =>
             dispatch({
@@ -210,8 +243,8 @@ const Formulario: React.FC = () => {
             textField: (params) => (
               <TextField
                 {...params}
-                required
                 fullWidth
+                required
                 error={!!state.errors.dataVencimento}
                 helperText={state.errors.dataVencimento}
               />
@@ -224,7 +257,7 @@ const Formulario: React.FC = () => {
           variant="contained"
           color="primary"
           disabled={state.loading}
-          startIcon={state.loading && <CircularProgress size={20} />}
+          startIcon={state.loading ? <CircularProgress size={20} /> : null}
         >
           {state.loading ? "Enviando..." : "Salvar"}
         </Button>
@@ -233,4 +266,4 @@ const Formulario: React.FC = () => {
   );
 };
 
-export default Formulario;
+export default ItemForm;
