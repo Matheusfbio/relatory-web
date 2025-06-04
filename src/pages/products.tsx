@@ -1,18 +1,59 @@
-import Box from "@mui/material/Box";
+import React, { useEffect, useState } from "react";
+import { database } from "../../firebaseConfig";
+import { ref, onValue } from "firebase/database";
 
-export default function Products() {
+type Produto = {
+  produto: string;
+  lote: string;
+  unidades: string;
+  tipoUnidade: string;
+  responsavel: string;
+  dataAtual: string;
+  dataVencimento: string;
+};
+
+const Products: React.FC = () => {
+  const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const produtosRef = ref(database, "produtos");
+
+    const unsubscribe = onValue(produtosRef, (snapshot) => {
+      const data = snapshot.val();
+
+      if (data) {
+        const lista = Object.entries(data).map(([id, item]) => ({
+          id,
+          ...(item as Produto),
+        }));
+        setProdutos(lista);
+      } else {
+        setProdutos([]);
+      }
+
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) return <p>Carregando...</p>;
+
   return (
-    <Box
-      component="form"
-      sx={{ "& .MuiTextField-root": { m: 1, width: "25ch" } }}
-      noValidate
-      autoComplete="off"
-    >
-      <div>
-        <h1 className="flex justify-center items-center">
-          Pagina em construção
-        </h1>
-      </div>
-    </Box>
+    <div>
+      <h2>Lista de Produtos</h2>
+      <ul>
+        {produtos.map((item) => (
+          <li key={item.produto + item.lote}>
+            <strong>{item.produto}</strong> - Lote: {item.lote} - Quantidade:{" "}
+            {item.unidades} {item.tipoUnidade} - Responsável: {item.responsavel}{" "}
+            - Vencimento: {item.dataVencimento}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
-}
+};
+
+export default Products;
