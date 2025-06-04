@@ -75,8 +75,12 @@ const ItemForm: React.FC = () => {
     if (!state.unidades.trim()) errors.unidades = "Quantidade é obrigatória";
     if (!state.responsavel.trim())
       errors.responsavel = "Responsável é obrigatório";
-    if (!state.dataVencimento.trim())
+    if (
+      !state.dataVencimento ||
+      isNaN(new Date(state.dataVencimento).getTime())
+    ) {
       errors.dataVencimento = "Data de vencimento é obrigatória";
+    }
 
     if (Object.keys(errors).length > 0) {
       dispatch({ type: "SET_ERRORS", payload: errors });
@@ -95,7 +99,9 @@ const ItemForm: React.FC = () => {
         tipoUnidade: state.tipoUnidade,
         responsavel: state.responsavel,
         dataAtual: state.dataAtual.toISOString().split("T")[0],
-        dataVencimento: state.dataVencimento,
+        dataVencimento: new Date(state.dataVencimento)
+          .toISOString()
+          .split("T")[0],
       });
 
       dispatch({ type: "RESET" });
@@ -236,7 +242,15 @@ const ItemForm: React.FC = () => {
             dispatch({
               type: "SET_FIELD",
               field: "dataVencimento",
-              payload: newValue ? newValue.toISOString().split("T")[0] : "",
+              payload: newValue
+                ? newValue instanceof Date
+                  ? newValue
+                  : typeof newValue === "object" && "toDate" in newValue
+                    ? (
+                        newValue as unknown as Date & { toDate: () => Date }
+                      ).toDate()
+                    : new Date(newValue)
+                : new Date(),
             })
           }
           slots={{
