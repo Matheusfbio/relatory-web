@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { database } from "../../firebaseConfig";
 import { ref, onValue } from "firebase/database";
+import { Box } from "@mui/material";
+import { SimpleTreeView } from "@mui/x-tree-view/SimpleTreeView";
+import { TreeItem } from "@mui/x-tree-view";
 
 type Produto = {
   produto: string;
@@ -41,17 +44,23 @@ const Products: React.FC = () => {
   if (loading) return <p>Carregando...</p>;
 
   return (
-    <div>
-      <h2>Lista de Produtos</h2>
-      <ul>
-        {produtos.map((item) => (
-          <li key={item.produto + item.lote}>
-            <strong>{item.produto}</strong> - Lote: {item.lote} - Quantidade:{" "}
-            {item.unidades} {item.tipoUnidade} - Responsável: {item.responsavel}{" "}
-            - Vencimento: {item.dataVencimento}
-          </li>
-        ))}
-      </ul>
+    <div className="p-5">
+      <Box>
+        <SimpleTreeView>
+          {produtos.map((item) => (
+            <TreeItem
+              className="p-2"
+              key={item.produto + item.lote}
+              itemId={item.lote}
+              label={item.produto}
+            >
+              <strong>Produto: {item.produto}</strong> - Lote: {item.lote} -
+              Quantidade: {item.unidades} {item.tipoUnidade} - Responsável:{" "}
+              {item.responsavel} - Vencimento: {item.dataVencimento}
+            </TreeItem>
+          ))}
+        </SimpleTreeView>
+      </Box>
     </div>
   );
 };
